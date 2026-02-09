@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucky Gacha Machine - Random Number Draw Game</title>
+    <title>Lucky Gacha Machine - Two-Step Draw Game</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -26,7 +26,7 @@
 
         .container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
@@ -101,19 +101,43 @@
             font-size: 1.1rem;
         }
 
-        input {
+        textarea {
             width: 100%;
             padding: 16px 20px;
             border: 2px solid #dee2e6;
             border-radius: 12px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 200px;
+            font-family: 'Segoe UI', sans-serif;
         }
 
-        input:focus {
+        textarea:focus {
             outline: none;
             border-color: #6a11cb;
             box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+
+        .input-info {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .counter {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .counter.valid {
+            color: #28a745;
+        }
+
+        .counter.invalid {
+            color: #dc3545;
         }
 
         .button-group {
@@ -168,6 +192,16 @@
             box-shadow: 0 10px 20px rgba(255, 107, 139, 0.3);
         }
 
+        .btn-name {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+
+        .btn-number {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            color: #333;
+        }
+
         .gacha-machine {
             background: linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%);
             border-radius: 20px;
@@ -209,25 +243,44 @@
             background: linear-gradient(135deg, #f1c40f 0%, #e67e22 100%);
         }
 
-        .number-display {
-            font-size: 6rem;
-            font-weight: 800;
-            color: #f1c40f;
-            text-shadow: 0 0 20px rgba(241, 196, 15, 0.7);
-            height: 140px;
+        .result-display {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            height: 200px;
             background-color: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
             transition: all 0.5s ease;
+            color: #f1c40f;
+            font-weight: 800;
         }
 
-        .number-display.rolling {
-            animation: rollNumber 0.8s ease-in-out infinite;
+        .current-draw {
+            font-size: 2rem;
+            text-shadow: 0 0 15px rgba(241, 196, 15, 0.7);
+            margin-bottom: 10px;
+            color: #a8edea;
         }
 
-        @keyframes rollNumber {
+        .name-display {
+            font-size: 3.5rem;
+            text-shadow: 0 0 15px rgba(241, 196, 15, 0.7);
+            margin-bottom: 15px;
+        }
+
+        .number-display {
+            font-size: 4.5rem;
+            text-shadow: 0 0 20px rgba(241, 196, 15, 0.7);
+        }
+
+        .result-display.rolling .current-draw,
+        .result-display.rolling .name-display,
+        .result-display.rolling .number-display {
+            animation: rollResult 0.8s ease-in-out infinite;
+        }
+
+        @keyframes rollResult {
 
             0%,
             100% {
@@ -239,6 +292,36 @@
             }
         }
 
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            background-color: #495057;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: linear-gradient(135deg, #f1c40f 0%, #e67e22 100%);
+            transform: scale(1.1);
+        }
+
+        .step.completed {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+
         .remaining-panel {
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             padding: 25px;
@@ -246,6 +329,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             max-height: 400px;
             overflow-y: auto;
+            margin-bottom: 20px;
         }
 
         .remaining-list {
@@ -255,24 +339,39 @@
             margin-top: 15px;
         }
 
-        .number-item {
-            width: 50px;
-            height: 50px;
+        .item-box {
+            min-width: 110px;
+            padding: 12px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
             background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             color: white;
-            font-size: 1.4rem;
             font-weight: 700;
             border-radius: 10px;
             transition: all 0.3s ease;
+            text-align: center;
         }
 
-        .number-item.used {
+        .item-name {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .item-number {
+            font-size: 1.6rem;
+        }
+
+        .item-box.used {
             background: linear-gradient(135deg, #ff6b8b 0%, #ff8e53 100%);
             transform: scale(0.9);
             opacity: 0.7;
+        }
+
+        .item-box.current-name {
+            background: linear-gradient(135deg, #f1c40f 0%, #e67e22 100%);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(241, 196, 15, 0.5);
         }
 
         .status-panel {
@@ -300,7 +399,7 @@
             padding: 20px;
             border-radius: 15px;
             margin-top: 20px;
-            max-height: 200px;
+            max-height: 400px;
             overflow-y: auto;
         }
 
@@ -309,23 +408,57 @@
             font-weight: 600;
             margin-bottom: 10px;
             color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .history-list {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 10px;
         }
 
         .history-item {
             background: rgba(255, 255, 255, 0.7);
-            padding: 8px 15px;
+            padding: 12px 15px;
             border-radius: 10px;
             font-weight: 600;
             color: #6a11cb;
+            display: flex;
+            justify-content: space-between;
         }
 
-        /* Responsive adjustments */
+        .history-name {
+            font-weight: 700;
+        }
+
+        .history-number {
+            font-size: 1.2rem;
+        }
+
+        /* 进度条样式 */
+        .progress-container {
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* 响应式调整 */
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -340,9 +473,20 @@
                 font-size: 2.2rem;
             }
 
+            .name-display {
+                font-size: 2.5rem;
+            }
+
             .number-display {
-                font-size: 4.5rem;
-                height: 110px;
+                font-size: 3rem;
+            }
+            
+            .remaining-panel {
+                max-height: 300px;
+            }
+            
+            .item-box {
+                min-width: 90px;
             }
         }
 
@@ -359,13 +503,33 @@
                 width: 100%;
             }
 
+            .name-display {
+                font-size: 2rem;
+            }
+
             .number-display {
-                font-size: 3.5rem;
-                height: 90px;
+                font-size: 2.5rem;
             }
 
             h1 {
                 font-size: 1.8rem;
+            }
+            
+            .item-box {
+                min-width: 80px;
+                padding: 8px;
+            }
+            
+            .item-name {
+                font-size: 0.9rem;
+            }
+            
+            .item-number {
+                font-size: 1.2rem;
+            }
+            
+            .current-draw {
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -375,314 +539,546 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-egg"></i> Lucky Gacha Machine</h1>
-            <p class="subtitle">Set a number range and draw non-repeating random numbers—test your luck!</p>
+            <p class="subtitle">两步抽选：先抽名字，再抽号码！系统自动生成1-N的号码</p>
         </header>
 
         <div class="main-content">
             <div class="left-panel">
                 <div class="setup-panel">
-                    <h2><i class="fas fa-cog"></i> Set the Draw Range</h2>
+                    <h2><i class="fas fa-cog"></i> 设置姓名列表</h2>
+                    
                     <div class="input-group">
-                        <label for="min-number">Minimum Number</label>
-                        <input type="number" id="min-number" min="1" max="999" value="1"
-                            placeholder="Enter the minimum number">
-                    </div>
-                    <div class="input-group">
-                        <label for="max-number">Maximum Number</label>
-                        <input type="number" id="max-number" min="2" max="1000" value="10"
-                            placeholder="Enter the maximum number">
+                        <label for="names-input">输入姓名列表 (每行一个，最多100个)</label>
+                        <textarea id="names-input" placeholder="例如：&#10;张三&#10;李四&#10;王五&#10;..."></textarea>
+                        <div class="counter" id="name-counter">已输入: 0/100</div>
+                        <div class="input-info">每行输入一个姓名，系统将自动生成1到N的号码（N=姓名数量）</div>
                     </div>
                     <div class="button-group">
+                        <button id="load-names-btn" class="btn-primary">
+                            <i class="fas fa-save"></i> 加载姓名列表
+                        </button>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="setup-progress"></div>
+                        </div>
+                        <div id="progress-text" class="counter">设置进度: 0%</div>
+                    </div>
+                    
+                    <div class="button-group" style="margin-top: 20px;">
                         <button id="start-btn" class="btn-primary">
-                            <i class="fas fa-play-circle"></i> Start
+                            <i class="fas fa-play-circle"></i> 开始游戏
                         </button>
                         <button id="reset-btn" class="btn-reset">
-                            <i class="fas fa-redo-alt"></i> Reset Game
+                            <i class="fas fa-redo-alt"></i> 重置游戏
                         </button>
                     </div>
                 </div>
 
                 <div class="remaining-panel">
-                    <h2><i class="fas fa-list-ol"></i> Remaining Numbers</h2>
-                    <div id="remaining-numbers" class="remaining-list">
-                        <!-- This will be generated dynamically by JavaScript -->
-                        <div class="instruction">Please set the range first, then click “Start”.</div>
+                    <h2><i class="fas fa-list-ol"></i> 剩余姓名和号码</h2>
+                    <div id="remaining-count-mini" style="margin-bottom: 10px;"></div>
+                    <div id="remaining-pairs" class="remaining-list">
+                        <div class="instruction">请先设置姓名列表，然后点击"开始游戏"。</div>
                     </div>
                 </div>
 
                 <div class="history-panel">
-                    <div class="history-title"><i class="fas fa-history"></i> Draw History</div>
+                    <div class="history-title"><i class="fas fa-history"></i> 配对历史记录</div>
                     <div id="history-list" class="history-list">
-                        <!-- This will be generated dynamically by JavaScript -->
-                        <div class="instruction">No draws yet.</div>
+                        <div class="instruction">暂无抽选记录。</div>
                     </div>
                 </div>
             </div>
 
             <div class="right-panel">
                 <div class="gacha-machine">
-                    <h2 style="color: white;"><i class="fas fa-dice"></i> Lucky Gacha Machine</h2>
-                    <div class="gacha-display">
-                        <div id="number-display" class="number-display">?</div>
+                    <h2 style="color: white;"><i class="fas fa-dice"></i> 两步抽选机</h2>
+                    
+                    <div class="step-indicator">
+                        <div class="step active" id="step-1">1</div>
+                        <div class="step" id="step-2">2</div>
                     </div>
+                    
+                    <div class="gacha-display">
+                        <div id="result-display" class="result-display">
+                            <div id="current-draw" class="current-draw">第一步：抽选姓名</div>
+                            <div id="name-display" class="name-display">等待抽选</div>
+                            <div id="number-display" class="number-display">?</div>
+                        </div>
+                    </div>
+                    
                     <div class="button-group">
-                        <button id="spin-btn" class="btn-primary" disabled>
-                            <i class="fas fa-random"></i> Spin
+                        <button id="draw-name-btn" class="btn-name" disabled>
+                            <i class="fas fa-user"></i> 抽选姓名
                         </button>
+                        <button id="draw-number-btn" class="btn-number" disabled>
+                            <i class="fas fa-hashtag"></i> 抽选号码
+                        </button>
+                    </div>
+                    
+                    <div class="button-group" style="margin-top: 15px;">
                         <button id="gacha-reset-btn" class="btn-secondary" disabled>
-                            <i class="fas fa-undo-alt"></i> Restart
+                            <i class="fas fa-undo-alt"></i> 重新开始
                         </button>
                     </div>
                 </div>
 
                 <div class="status-panel">
-                    <div id="status-message">Please set the draw range first, then click “Start”.</div>
+                    <div id="status-message">请先设置姓名列表，然后点击"开始游戏"。</div>
                     <div id="remaining-count" style="margin-top: 10px;"></div>
+                    <div id="current-step-info" style="margin-top: 10px; font-size: 1rem;"></div>
+                    <div id="game-progress" class="progress-container" style="margin-top: 15px; display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="game-progress-bar"></div>
+                        </div>
+                        <div id="game-progress-text" class="counter" style="font-size: 1rem;"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <footer>
-            <p>Random Number Draw Game | Each number can only be drawn once</p>
+            <p>两步抽选游戏 | 先抽姓名，再抽号码 | 系统自动生成1到N的号码</p>
         </footer>
     </div>
 
     <script>
-        // Global variables
-        let minNumber = 1;
-        let maxNumber = 10;
-        let availableNumbers = [];
-        let usedNumbers = [];
+        // 全局变量
+        let nameList = [];
+        let numberList = [];
+        let availableNames = []; // 可抽选的姓名
+        let availableNumbers = []; // 可抽选的号码
+        let currentName = null; // 当前抽选的姓名
+        let usedPairs = []; // 存储已完成的配对
         let gameActive = false;
         let isRolling = false;
+        let currentStep = 1; // 1: 抽姓名, 2: 抽号码
+        const MAX_ITEMS = 100;
 
-        // DOM elements
-        const minInput = document.getElementById('min-number');
-        const maxInput = document.getElementById('max-number');
+        // DOM元素
+        const namesInput = document.getElementById('names-input');
+        const loadNamesBtn = document.getElementById('load-names-btn');
         const startBtn = document.getElementById('start-btn');
         const resetBtn = document.getElementById('reset-btn');
-        const spinBtn = document.getElementById('spin-btn');
+        const drawNameBtn = document.getElementById('draw-name-btn');
+        const drawNumberBtn = document.getElementById('draw-number-btn');
         const gachaResetBtn = document.getElementById('gacha-reset-btn');
+        const resultDisplay = document.getElementById('result-display');
+        const currentDrawText = document.getElementById('current-draw');
+        const nameDisplay = document.getElementById('name-display');
         const numberDisplay = document.getElementById('number-display');
-        const remainingNumbersDiv = document.getElementById('remaining-numbers');
+        const remainingPairsDiv = document.getElementById('remaining-pairs');
         const historyListDiv = document.getElementById('history-list');
         const statusMessage = document.getElementById('status-message');
         const remainingCount = document.getElementById('remaining-count');
+        const remainingCountMini = document.getElementById('remaining-count-mini');
+        const nameCounter = document.getElementById('name-counter');
+        const setupProgress = document.getElementById('setup-progress');
+        const progressText = document.getElementById('progress-text');
+        const gameProgressContainer = document.getElementById('game-progress');
+        const gameProgressBar = document.getElementById('game-progress-bar');
+        const gameProgressText = document.getElementById('game-progress-text');
+        const currentStepInfo = document.getElementById('current-step-info');
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
 
-        // Initialize event listeners
-        minInput.addEventListener('change', validateInputs);
-        maxInput.addEventListener('change', validateInputs);
+        // 初始化事件监听器
+        loadNamesBtn.addEventListener('click', loadNames);
         startBtn.addEventListener('click', startGame);
         resetBtn.addEventListener('click', resetGame);
-        spinBtn.addEventListener('click', spinGacha);
+        drawNameBtn.addEventListener('click', drawName);
+        drawNumberBtn.addEventListener('click', drawNumber);
         gachaResetBtn.addEventListener('click', resetGacha);
+        
+        // 监听输入框变化
+        namesInput.addEventListener('input', updateNameCounter);
 
-        // Validate input range
-        function validateInputs() {
-            let min = parseInt(minInput.value);
-            let max = parseInt(maxInput.value);
-
-            // Ensure min does not exceed max
-            if (min >= max) {
-                maxInput.value = min + 1;
-                max = min + 1;
+        // 更新姓名计数器
+        function updateNameCounter() {
+            const namesText = namesInput.value.trim();
+            const names = namesText.split('\n').filter(name => name.trim().length > 0);
+            const count = names.length;
+            
+            nameCounter.textContent = `已输入: ${count}/${MAX_ITEMS}`;
+            if (count > MAX_ITEMS) {
+                nameCounter.classList.add('invalid');
+                nameCounter.classList.remove('valid');
+            } else if (count > 0) {
+                nameCounter.classList.add('valid');
+                nameCounter.classList.remove('invalid');
+            } else {
+                nameCounter.classList.remove('valid', 'invalid');
             }
-
-            // Ensure min is at least 1
-            if (min < 1) {
-                minInput.value = 1;
-                min = 1;
-            }
-
-            // Ensure max does not exceed 1000
-            if (max > 1000) {
-                maxInput.value = 1000;
-                max = 1000;
-            }
+            
+            updateSetupProgress();
         }
 
-        // Start the game
+        // 更新设置进度
+        function updateSetupProgress() {
+            const namesCount = namesInput.value.trim().split('\n').filter(name => name.trim().length > 0).length;
+            
+            let progress = 0;
+            if (namesCount > 0) {
+                progress = 100;
+            }
+            
+            setupProgress.style.width = `${progress}%`;
+            progressText.textContent = `设置进度: ${progress}%`;
+        }
+
+        // 加载姓名列表
+        function loadNames() {
+            const namesText = namesInput.value.trim();
+            if (!namesText) {
+                alert("请输入至少一个姓名！");
+                return;
+            }
+            
+            nameList = namesText.split('\n')
+                .map(name => name.trim())
+                .filter(name => name.length > 0);
+            
+            if (nameList.length > MAX_ITEMS) {
+                alert(`最多只能输入${MAX_ITEMS}个姓名！`);
+                nameList = nameList.slice(0, MAX_ITEMS);
+                namesInput.value = nameList.join('\n');
+                updateNameCounter();
+            }
+            
+            // 自动生成号码列表 (1到姓名数量)
+            numberList = [];
+            for (let i = 1; i <= nameList.length; i++) {
+                numberList.push(i.toString());
+            }
+            
+            statusMessage.textContent = `已加载 ${nameList.length} 个姓名，系统自动生成了 ${numberList.length} 个号码 (1-${numberList.length})。`;
+            updateSetupProgress();
+        }
+
+        // 开始游戏
         function startGame() {
-            minNumber = parseInt(minInput.value);
-            maxNumber = parseInt(maxInput.value);
-
-            // Validate range
-            if (minNumber >= maxNumber) {
-                alert("The minimum number must be less than the maximum number!");
+            if (nameList.length === 0) {
+                alert("请先加载姓名列表！");
                 return;
             }
-
-            if (maxNumber - minNumber + 1 < 1) {
-                alert("The range must contain at least 1 number!");
-                return;
-            }
-
-            // Initialize available numbers
-            availableNumbers = [];
-            for (let i = minNumber; i <= maxNumber; i++) {
-                availableNumbers.push(i);
-            }
-
-            usedNumbers = [];
-
-            // Update UI
-            updateRemainingNumbersDisplay();
+            
+            // 初始化可用姓名和号码
+            availableNames = [...nameList];
+            availableNumbers = [...numberList];
+            
+            currentName = null;
+            usedPairs = [];
+            currentStep = 1;
+            
+            // 更新步骤指示器
+            updateStepIndicator();
+            
+            // 更新UI
+            updateRemainingPairsDisplay();
             updateHistoryDisplay();
             updateStatus();
-
-            // Enable buttons
-            spinBtn.disabled = false;
+            
+            // 启用按钮
+            drawNameBtn.disabled = false;
+            drawNumberBtn.disabled = true;
             gachaResetBtn.disabled = false;
-
-            // Set game state
+            
+            // 设置游戏状态
             gameActive = true;
-
-            // Clear display
+            
+            // 清空显示
+            currentDrawText.textContent = "第一步：抽选姓名";
+            nameDisplay.textContent = "等待抽选";
             numberDisplay.textContent = "?";
-            numberDisplay.classList.remove("rolling");
-
-            // Update status message
-            statusMessage.textContent = `Game started! Range: ${minNumber} - ${maxNumber}. Click “Spin” to draw a number!`;
+            resultDisplay.classList.remove("rolling");
+            
+            // 显示游戏进度条
+            gameProgressContainer.style.display = 'block';
+            updateGameProgress();
+            
+            // 更新状态消息
+            statusMessage.textContent = `游戏开始！共有 ${availableNames.length} 个姓名和 ${availableNumbers.length} 个号码。`;
+            currentStepInfo.textContent = "当前步骤：抽选姓名";
         }
 
-        // Spin the gacha machine
-        function spinGacha() {
-            if (!gameActive || availableNumbers.length === 0) {
-                statusMessage.textContent = "No numbers left. Please reset the game to start again!";
+        // 抽选姓名
+        function drawName() {
+            if (!gameActive || availableNames.length === 0) {
+                statusMessage.textContent = "没有可抽选的姓名了。请重置游戏重新开始！";
                 return;
             }
-
+            
             if (isRolling) return;
-
-            // Start rolling animation
+            
+            // 开始滚动动画
             isRolling = true;
-            numberDisplay.classList.add("rolling");
-
-            // Randomly pick a number
-            const randomIndex = Math.floor(Math.random() * availableNumbers.length);
-            const selectedNumber = availableNumbers[randomIndex];
-
-            // Simulate rolling time
+            resultDisplay.classList.add("rolling");
+            currentDrawText.textContent = "正在抽选姓名...";
+            
+            // 随机选择一个姓名
             setTimeout(() => {
-                // Remove from available list
-                availableNumbers.splice(randomIndex, 1);
-
-                // Add to used list
-                usedNumbers.push(selectedNumber);
-
-                // Update display
-                numberDisplay.textContent = selectedNumber;
-                numberDisplay.classList.remove("rolling");
-
-                // Update lists
-                updateRemainingNumbersDisplay();
-                updateHistoryDisplay();
+                const randomIndex = Math.floor(Math.random() * availableNames.length);
+                currentName = availableNames[randomIndex];
+                
+                // 从可用列表中移除
+                availableNames.splice(randomIndex, 1);
+                
+                // 更新显示
+                nameDisplay.textContent = currentName;
+                numberDisplay.textContent = "?";
+                currentDrawText.textContent = "已抽选姓名";
+                resultDisplay.classList.remove("rolling");
+                
+                // 更新步骤
+                currentStep = 2;
+                updateStepIndicator();
+                
+                // 更新列表显示
+                updateRemainingPairsDisplay();
                 updateStatus();
-
-                // Check if game ends
-                if (availableNumbers.length === 0) {
-                    statusMessage.textContent = "Congratulations! All numbers have been drawn!";
-                    spinBtn.disabled = true;
-                } else {
-                    statusMessage.textContent = `Congrats! You drew number ${selectedNumber}!`;
-                }
-
+                
+                // 更新按钮状态
+                drawNameBtn.disabled = true;
+                drawNumberBtn.disabled = false;
+                
+                // 更新状态消息
+                statusMessage.textContent = `已抽选姓名：${currentName}。现在请点击"抽选号码"。`;
+                currentStepInfo.textContent = "当前步骤：抽选号码";
+                
                 isRolling = false;
             }, 1500);
         }
 
-        // Reset the gacha machine (restart with same range)
+        // 抽选号码
+        function drawNumber() {
+            if (!gameActive || currentName === null || availableNumbers.length === 0) {
+                statusMessage.textContent = "请先抽选一个姓名！";
+                return;
+            }
+            
+            if (isRolling) return;
+            
+            // 开始滚动动画
+            isRolling = true;
+            resultDisplay.classList.add("rolling");
+            currentDrawText.textContent = "正在抽选号码...";
+            
+            // 随机选择一个号码
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+                const selectedNumber = availableNumbers[randomIndex];
+                
+                // 从可用列表中移除
+                availableNumbers.splice(randomIndex, 1);
+                
+                // 添加到已使用配对
+                usedPairs.push({
+                    name: currentName,
+                    number: selectedNumber
+                });
+                
+                // 更新显示
+                numberDisplay.textContent = selectedNumber;
+                currentDrawText.textContent = "配对完成！";
+                resultDisplay.classList.remove("rolling");
+                
+                // 更新步骤
+                currentStep = 1;
+                updateStepIndicator();
+                
+                // 清空当前姓名
+                currentName = null;
+                
+                // 更新列表显示
+                updateRemainingPairsDisplay();
+                updateHistoryDisplay();
+                updateStatus();
+                updateGameProgress();
+                
+                // 更新按钮状态
+                drawNameBtn.disabled = false;
+                drawNumberBtn.disabled = true;
+                
+                // 检查游戏是否结束
+                if (availableNames.length === 0 || availableNumbers.length === 0) {
+                    statusMessage.textContent = "恭喜！所有配对都已抽选完毕！";
+                    drawNameBtn.disabled = true;
+                    drawNumberBtn.disabled = true;
+                } else {
+                    statusMessage.textContent = `配对完成！已记录：${usedPairs[usedPairs.length-1].name} - ${usedPairs[usedPairs.length-1].number}`;
+                }
+                
+                currentStepInfo.textContent = "当前步骤：抽选姓名";
+                
+                isRolling = false;
+            }, 1500);
+        }
+
+        // 重置抽选机
         function resetGacha() {
             if (!gameActive) return;
-
-            // Re-initialize the game
+            
+            // 重新初始化游戏
             startGame();
-
-            // Update status
-            statusMessage.textContent = `Game reset! Range: ${minNumber} - ${maxNumber}. Click “Spin” to draw a number!`;
+            
+            // 更新状态
+            statusMessage.textContent = `游戏已重置！共有 ${availableNames.length} 个姓名和 ${availableNumbers.length} 个号码。`;
         }
 
-        // Reset the entire game (back to defaults)
+        // 重置整个游戏
         function resetGame() {
-            // Reset inputs
-            minInput.value = 1;
-            maxInput.value = 10;
-
-            // Reset display
+            // 重置输入
+            namesInput.value = "";
+            
+            // 重置显示
+            currentDrawText.textContent = "第一步：抽选姓名";
+            nameDisplay.textContent = "等待抽选";
             numberDisplay.textContent = "?";
-            numberDisplay.classList.remove("rolling");
-
-            // Clear lists
-            remainingNumbersDiv.innerHTML = '<div class="instruction">Please set the range first, then click “Start”.</div>';
-            historyListDiv.innerHTML = '<div class="instruction">No draws yet.</div>';
-
-            // Disable buttons
-            spinBtn.disabled = true;
+            resultDisplay.classList.remove("rolling");
+            
+            // 重置步骤指示器
+            currentStep = 1;
+            updateStepIndicator();
+            
+            // 清空列表
+            remainingPairsDiv.innerHTML = '<div class="instruction">请先设置姓名列表，然后点击"开始游戏"。</div>';
+            historyListDiv.innerHTML = '<div class="instruction">暂无抽选记录。</div>';
+            
+            // 禁用按钮
+            drawNameBtn.disabled = true;
+            drawNumberBtn.disabled = true;
             gachaResetBtn.disabled = true;
-
-            // Reset state
+            
+            // 重置状态
             gameActive = false;
             isRolling = false;
-
-            // Update status
-            statusMessage.textContent = 'Please set the draw range first, then click "Start".';
+            currentName = null;
+            
+            // 更新状态
+            statusMessage.textContent = '请先设置姓名列表，然后点击"开始游戏"。';
             remainingCount.textContent = "";
+            remainingCountMini.textContent = "";
+            currentStepInfo.textContent = "";
+            
+            // 重置计数器
+            updateNameCounter();
+            updateSetupProgress();
+            
+            // 隐藏游戏进度条
+            gameProgressContainer.style.display = 'none';
         }
 
-        // Update remaining numbers display
-        function updateRemainingNumbersDisplay() {
-            if (!gameActive || availableNumbers.length === 0) {
-                remainingNumbersDiv.innerHTML = '<div class="instruction">No remaining numbers.</div>';
+        // 更新步骤指示器
+        function updateStepIndicator() {
+            // 重置所有步骤
+            step1.classList.remove("active", "completed");
+            step2.classList.remove("active", "completed");
+            
+            if (currentStep === 1) {
+                step1.classList.add("active");
+            } else if (currentStep === 2) {
+                step1.classList.add("completed");
+                step2.classList.add("active");
+            }
+        }
+
+        // 更新剩余配对显示
+        function updateRemainingPairsDisplay() {
+            if (!gameActive) {
+                remainingPairsDiv.innerHTML = '<div class="instruction">请先设置姓名列表，然后点击"开始游戏"。</div>';
                 return;
             }
-
+            
             let html = '';
-            availableNumbers.forEach(number => {
-                html += `<div class="number-item">${number}</div>`;
+            
+            // 显示已抽选的姓名（如果有）
+            if (currentName) {
+                html += `
+                    <div class="item-box current-name">
+                        <div class="item-name">${currentName}</div>
+                        <div class="item-number">等待号码</div>
+                    </div>
+                `;
+            }
+            
+            // 显示可用姓名
+            availableNames.forEach(name => {
+                html += `
+                    <div class="item-box">
+                        <div class="item-name">${name}</div>
+                        <div class="item-number">?</div>
+                    </div>
+                `;
             });
-
-            remainingNumbersDiv.innerHTML = html;
+            
+            // 显示已使用的配对
+            usedPairs.forEach(pair => {
+                html += `
+                    <div class="item-box used">
+                        <div class="item-name">${pair.name}</div>
+                        <div class="item-number">${pair.number}</div>
+                    </div>
+                `;
+            });
+            
+            remainingPairsDiv.innerHTML = html;
         }
 
-        // Update draw history display
+        // 更新抽选历史显示
         function updateHistoryDisplay() {
-            if (usedNumbers.length === 0) {
-                historyListDiv.innerHTML = '<div class="instruction">No draws yet.</div>';
+            if (usedPairs.length === 0) {
+                historyListDiv.innerHTML = '<div class="instruction">暂无抽选记录。</div>';
                 return;
             }
-
+            
             let html = '';
-            // Show the latest 5 records, newest first
-            const recentHistory = [...usedNumbers].reverse().slice(0, 5);
-            recentHistory.forEach(number => {
-                html += `<div class="history-item">${number}</div>`;
+            // 显示最新的记录，最新的在最前面
+            const recentHistory = [...usedPairs].reverse();
+            recentHistory.forEach(pair => {
+                html += `
+                    <div class="history-item">
+                        <span class="history-name">${pair.name}</span>
+                        <span class="history-number">${pair.number}</span>
+                    </div>
+                `;
             });
-
-            // If more than 5, show a hint
-            if (usedNumbers.length > 5) {
-                html += `<div class="history-item">+${usedNumbers.length - 5} more</div>`;
-            }
-
+            
             historyListDiv.innerHTML = html;
         }
 
-        // Update status info
+        // 更新状态信息
         function updateStatus() {
             if (!gameActive) return;
-
-            const totalNumbers = maxNumber - minNumber + 1;
-            const usedCount = usedNumbers.length;
-            const remainingCountValue = totalNumbers - usedCount;
-
-            remainingCount.textContent = `Remaining: ${remainingCountValue}/${totalNumbers}`;
+            
+            const totalPairs = nameList.length;
+            const completedCount = usedPairs.length;
+            const remainingNames = availableNames.length;
+            const remainingNumbers = availableNumbers.length;
+            
+            remainingCount.textContent = `剩余姓名: ${remainingNames}/${totalPairs} | 剩余号码: ${remainingNumbers}/${totalPairs}`;
+            remainingCountMini.textContent = `剩余 ${remainingNames} 个姓名, ${remainingNumbers} 个号码`;
         }
 
-        // Init
+        // 更新游戏进度
+        function updateGameProgress() {
+            if (!gameActive) return;
+            
+            const totalPairs = nameList.length;
+            const completedCount = usedPairs.length;
+            const progress = (completedCount / totalPairs) * 100;
+            
+            gameProgressBar.style.width = `${progress}%`;
+            gameProgressText.textContent = `完成进度: ${completedCount}/${totalPairs} (${Math.round(progress)}%)`;
+        }
+
+        // 初始化
         function init() {
-            validateInputs();
+            updateNameCounter();
         }
 
-        // Initialize after DOM is ready
+        // DOM加载完成后初始化
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
